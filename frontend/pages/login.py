@@ -4,8 +4,8 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render() -> None:
-    st.title("Telco Churn Prototype")
-    st.write("Sign in to use prediction, analytics, and the AI assistant.")
+    st.title("ChurnShield")
+    st.write("Sign in to score churn risk, review retention options, and ask questions about stored results.")
     st.info("DEMO accounts (local development only): `manager` / `manager123` and `employee` / `employee123`.")
 
     username = st.text_input("Username")

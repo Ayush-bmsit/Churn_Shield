@@ -4,7 +4,7 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render(api: ApiClient) -> None:
-    st.title("Employee dashboard")
+    st.title("ChurnShield — Employee dashboard")
     st.write(
         "Use this page to look up a customer, then open Customer Prediction for a new score "
         "or Batch Prediction for a CSV."

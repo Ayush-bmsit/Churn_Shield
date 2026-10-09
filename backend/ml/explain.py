@@ -24,6 +24,15 @@ def _human_label(transformed_name: str) -> str:
     return name.replace("_", " ")
 
 
+def _transformed_matrix(pipeline, features: pd.DataFrame):
+    data = features
+    for name, step in pipeline.steps[:-1]:
+        if name == "smote":
+            continue
+        data = step.transform(data)
+    return np.asarray(data)
+
+
 def explain_one(feature_dict: dict, top_n: int = 5) -> dict:
     models_dir = Path(settings.models_dir)
     pipeline = joblib.load(models_dir / "churn_pipeline.joblib")
@@ -32,7 +41,7 @@ def explain_one(feature_dict: dict, top_n: int = 5) -> dict:
 
     df = clean_features(pd.DataFrame([feature_dict]))
     X = df[FEATURE_COLUMNS]
-    Xt = np.asarray(preprocess.transform(X))
+    Xt = _transformed_matrix(pipeline, X)
     feature_names = list(preprocess.get_feature_names_out())
 
     model_name = type(model).__name__.lower()
@@ -40,7 +49,24 @@ def explain_one(feature_dict: dict, top_n: int = 5) -> dict:
     method = ""
 
     try:
-        if "logistic" in model_name:
+        if type(model).__name__ == "VotingClassifier":
+            member_values = []
+            for estimator in model.named_estimators_.values():
+                explainer = shap.TreeExplainer(estimator)
+                raw = explainer.shap_values(Xt)
+                if isinstance(raw, list):
+                    values = np.asarray(raw[1] if len(raw) > 1 else raw[0])
+                else:
+                    values = np.asarray(raw)
+                    if values.ndim == 3:
+                        values = values[:, :, 1]
+                member_values.append(values)
+            shap_values = np.mean(member_values, axis=0)
+            method = (
+                "mean of shap.TreeExplainer values across soft-vote members; "
+                "this is not a single joint SHAP decomposition of the averaged probability"
+            )
+        elif "logistic" in model_name:
             background = np.load(models_dir / "shap_background.npy")
             if len(background) > 100:
                 background = background[:100]
@@ -90,5 +116,9 @@ def explain_one(feature_dict: dict, top_n: int = 5) -> dict:
         "method": method,
         "model_type": type(model).__name__,
         "factors": factors,
-        "note": "Positive SHAP values push the prediction toward churn (class Yes).",
+        "note": (
+            "Positive SHAP values push the prediction toward churn (class Yes). "
+            "These are associations in the fitted model, not causes, and they do not "
+            "show that changing the feature would prevent churn."
+        ),
     }

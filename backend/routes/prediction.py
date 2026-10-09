@@ -8,10 +8,10 @@ import io
 from backend.auth.dependencies import require_roles
 from backend.database.connection import get_db
 from backend.database import crud
+from backend.ml.decision_support import build_decision
 from backend.ml.explain import explain_one
 from backend.ml.predict import predict_frame, predict_one, template_columns
 from backend.ml.preprocessing import FEATURE_COLUMNS, ID_COL, model_dict_to_customer_values
-from backend.ml.retention import retention_suggestions
 
 router = APIRouter(tags=["prediction"])
 
@@ -43,7 +43,13 @@ class PredictRequest(BaseModel):
 def _full_response(features: dict, save: bool, db: Session) -> dict:
     prediction = predict_one(features)
     explanation = explain_one(features)
-    suggestions = retention_suggestions(features, prediction["churn_probability"])
+    decision = build_decision(
+        features,
+        prediction["churn_probability"],
+        decision_threshold=prediction["decision_threshold"],
+        explanation_ok=bool(explanation.get("ok")),
+    )
+    suggestions = decision["messages"]
     if save:
         crud.upsert_customer(db, model_dict_to_customer_values(features))
         crud.upsert_prediction(
@@ -61,7 +67,11 @@ def _full_response(features: dict, save: bool, db: Session) -> dict:
         ),
         "explanation": explanation,
         "recommendations": suggestions,
-        "recommendations_note": "These suggestions are rule-based business heuristics, not model outputs.",
+        "decision_support": decision,
+        "recommendations_note": (
+            "Suggestions apply the synthetic Northwind Mobile policy rules to the model score. "
+            "They are not learned by the model and they do not prove that an offer prevents churn."
+        ),
     }
 
 

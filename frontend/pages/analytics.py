@@ -5,7 +5,7 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render(api: ApiClient) -> None:
-    st.title("Analytics")
+    st.title("ChurnShield — Analytics")
     st.write("Aggregates computed from MySQL customer and prediction tables.")
 
     try:

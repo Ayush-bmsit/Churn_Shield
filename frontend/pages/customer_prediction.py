@@ -17,8 +17,8 @@ PAYMENTS = [
 
 
 def render(api: ApiClient) -> None:
-    st.title("Customer Prediction")
-    st.write("Scores one customer with the saved preprocessing + model pipeline.")
+    st.title("ChurnShield — Customer prediction")
+    st.write("Scores one customer with the saved pipeline, then applies the synthetic retention rules.")
 
     lookup = st.text_input("Optional: load an existing customer ID")
     prefill = {}
@@ -87,9 +87,18 @@ def render(api: ApiClient) -> None:
         except ApiError as exc:
             st.error(str(exc.detail))
             return
-        show_risk(result["churn_probability"], result["risk_level"])
+        show_risk(
+            result["churn_probability"],
+            result["risk_level"],
+            predicted=result.get("predicted_churn"),
+            threshold=result.get("decision_threshold"),
+        )
         show_explanation(result.get("explanation") or {})
-        show_recommendations(result.get("recommendations") or [], result.get("recommendations_note"))
+        show_recommendations(
+            result.get("recommendations") or [],
+            result.get("recommendations_note"),
+            result.get("decision_support"),
+        )
 
 
 def _idx(options: list[str], value, default=None) -> int:

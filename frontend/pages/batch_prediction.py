@@ -5,7 +5,7 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render(api: ApiClient) -> None:
-    st.title("Batch Prediction")
+    st.title("ChurnShield — Batch prediction")
     st.write("Upload a CSV with the required feature columns. The backend scores every row with the saved pipeline.")
 
     try:

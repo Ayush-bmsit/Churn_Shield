@@ -20,7 +20,7 @@ from frontend.pages import (  # noqa: E402
     manager_dashboard,
 )
 
-st.set_page_config(page_title="Telco Churn Prototype", layout="wide")
+st.set_page_config(page_title="ChurnShield", layout="wide")
 
 EMPLOYEE_PAGES = {
     "Employee dashboard": employee_dashboard,
@@ -45,6 +45,8 @@ def main() -> None:
     role = st.session_state.get("role")
     pages = MANAGER_PAGES if role == "manager" else EMPLOYEE_PAGES
     with st.sidebar:
+        st.header("ChurnShield")
+        st.caption("Customer retention decision support")
         st.write(f"Signed in as **{st.session_state.get('username')}** ({role})")
         choice = st.radio("Go to", list(pages.keys()))
         if st.button("Log out"):

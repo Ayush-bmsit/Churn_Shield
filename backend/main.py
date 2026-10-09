@@ -6,9 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routes import analytics, auth, chatbot, customers, prediction
 
 app = FastAPI(
-    title="Telco Churn Prototype API",
-    description="College ML prototype: JWT auth, sklearn pipeline inference, MySQL analytics, LLM SQL chatbot.",
-    version="0.1.0",
+    title="ChurnShield API",
+    description=(
+        "ChurnShield demo: JWT auth, a saved sklearn pipeline, MySQL analytics, "
+        "and a SELECT-only SQL assistant. Policy RAG is not implemented."
+    ),
+    version="0.2.0",
 )
 
 app.add_middleware(

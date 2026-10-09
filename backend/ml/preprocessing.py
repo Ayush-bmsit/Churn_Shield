@@ -49,17 +49,25 @@ def predicted_label(probability: float, threshold: float = 0.5) -> str:
 
 
 def clean_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Coerce types used by the model. Does not one-hot encode (the pipeline does)."""
+    """Coerce types used by the model. Does not one-hot encode (the pipeline does).
+
+    Blank TotalCharges are set to 0 only when tenure is 0. On this dataset those
+    blanks are new accounts with no accumulated bill. Any other missing numeric
+    value is left for the median imputer inside the training pipeline.
+    """
     out = df.copy()
+    if "tenure" in out.columns:
+        out["tenure"] = pd.to_numeric(out["tenure"], errors="coerce")
     if "TotalCharges" in out.columns:
-        out["TotalCharges"] = pd.to_numeric(out["TotalCharges"], errors="coerce")
-        out["TotalCharges"] = out["TotalCharges"].fillna(0)
+        charges = pd.to_numeric(out["TotalCharges"], errors="coerce")
+        if "tenure" in out.columns:
+            new_account = charges.isna() & out["tenure"].eq(0)
+            charges = charges.mask(new_account, 0)
+        out["TotalCharges"] = charges
     if "MonthlyCharges" in out.columns:
         out["MonthlyCharges"] = pd.to_numeric(out["MonthlyCharges"], errors="coerce")
-    if "tenure" in out.columns:
-        out["tenure"] = pd.to_numeric(out["tenure"], errors="coerce").fillna(0).astype(int)
     if "SeniorCitizen" in out.columns:
-        out["SeniorCitizen"] = pd.to_numeric(out["SeniorCitizen"], errors="coerce").fillna(0).astype(int)
+        out["SeniorCitizen"] = pd.to_numeric(out["SeniorCitizen"], errors="coerce")
     return out
 
 

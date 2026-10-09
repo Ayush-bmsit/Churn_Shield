@@ -5,10 +5,14 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render(api: ApiClient) -> None:
-    st.title("AI Assistant")
+    st.title("ChurnShield — AI assistant")
     st.write(
         "Questions go Streamlit → FastAPI `/chat` → LLM (SQL) → read-only MySQL → LLM (answer). "
-        "The chatbot does not run the churn model."
+        "This assistant answers questions about stored results. It does not retrieve policy documents."
+    )
+    st.caption(
+        "A future retrieval assistant is specified in data/mock_company_policies/README.md. "
+        "That path is not active, and policy text is not mixed into these SQL answers."
     )
     st.caption("Requires LLM_API_KEY on the backend. There are no placeholder answers.")
 

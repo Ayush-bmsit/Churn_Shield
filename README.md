@@ -1,6 +1,6 @@
-# Telco Customer Churn — Full Prototype
+# ChurnShield — Telco retention demo
 
-College ML prototype: predict telecom churn, explain scores, segment customers, and ask questions about stored results.
+College ML project: predict telecom churn on the IBM telco dataset, explain scores, compare a domain-feature set under stratified cross-validation, and trace a suggested action to synthetic company rules.
 
 This is a **working local architecture demo**, not a production system. JWT, Docker, and a SELECT-only DB user reduce some risks; they do not make the app “secure” in a real-world sense.
 
@@ -46,7 +46,7 @@ Streamlit frontend  --HTTP/JSON-->  FastAPI backend
 - Streamlit never talks to MySQL. It only calls FastAPI.
 - Training is an offline script (`python -m backend.ml.train`), not an HTTP `/train` endpoint.
 - One Streamlit app, role-based sidebar. Not two applications.
-- Chatbot uses LLM → SQL → MySQL → LLM. **RAG is not included** (optional later).
+- Chatbot uses LLM → SQL → MySQL → LLM. Policy RAG is not implemented. Synthetic source documents for a later retrieval step are in `data/mock_company_policies/`.
 - LLM provider is swapped with env vars (`LLM_PROVIDER`, `LLM_API_KEY`, `LLM_BASE_URL`).
 - Risk labels: **Low < 0.30**, **Medium 0.30–0.70**, **High > 0.70**. These are project-defined business buckets, not universal statistical or medical thresholds.
 
@@ -69,9 +69,12 @@ churnfolder/
 │   ├── api_client.py        HTTP helper
 │   ├── pages/               Screen modules (not Streamlit’s default multi-page nav)
 │   └── components/          Shared widgets
-├── data/                    Training CSV
+├── data/                    Training CSV and synthetic policy Markdown
+├── docs/                    Audit, literature review, research questions, implementation report
 ├── models/                  Saved pipeline (created by training)
+├── notebooks/               Model-development notebook
 ├── scripts/                 wait_for_db.py, seed.py
+├── tests/                   Focused checks for features, protocol, policies, and branding
 ├── mysql/init.sql           Creates chatbot MySQL user on first volume init
 ├── docker-compose.yml
 ├── Dockerfile.backend
@@ -97,24 +100,18 @@ churnfolder/
 ## How the ML pipeline works
 
 1. Load `data/WA_Fn-UseC_-Telco-Customer-Churn.csv`.
-2. Clean: `TotalCharges` to numeric (blanks → 0), types for tenure / SeniorCitizen.
-3. Features: numeric `tenure`, `MonthlyCharges`, `TotalCharges`, `SeniorCitizen` plus the usual Telco categoricals. Target = `Churn`.
-4. `train_test_split` 80/20, stratified.
-5. `ColumnTransformer`: `StandardScaler` on numerics, `OneHotEncoder` on categoricals.
-6. Fit **Logistic Regression**, **Random Forest**, and **XGBoost** (if import works) each inside a sklearn `Pipeline` with that preprocessor.
-7. Compare precision, recall, F1, ROC-AUC, confusion matrix on the **same test split**.
-8. **Prototype model choice:** highest test **ROC-AUC**. That is only “best among these models on this split,” not universally best.
+2. Clean: `TotalCharges` to numeric. Blanks are set to 0 only when tenure is 0. Other numeric gaps stay missing until a median imputer fitted inside each training fold.
+3. Hold out a stratified 20% test set (`random_state=42`) before any model comparison.
+4. On the development set only, compare two feature setups with the same stratified 5-fold splits:
+   - **Baseline:** the original predictors (`customerID` and `Churn` excluded).
+   - **Engineered:** those predictors plus `tenure_group` and `optional_service_count`.
+5. Candidates, when the libraries import: logistic regression, random forest, XGBoost, LightGBM, CatBoost, and a soft vote of the three boosters. Class weighting is the main imbalance setting. Unweighted logistic regression, unweighted LightGBM, and training-fold SMOTE (logistic regression only) are compared as well. SMOTE is not applied to validation or test rows.
+6. **Selection metric:** mean average precision (PR-AUC) across the five development folds. Precision, recall, and F1 at 0.50 are reported, but they do not choose the model.
+7. The decision threshold maximises F1 on out-of-fold development probabilities. The test set is scored once, after that choice, and is written to `final_test_metrics` in `models/training_metrics.json`.
+8. Risk labels stay separate from that threshold: **Low &lt; 0.30**, **Medium 0.30–0.70**, **High &gt; 0.70**.
+9. The fitted pipeline is saved to `models/churn_pipeline.joblib`. Inference loads it and does not retrain.
 
-   On the current training run (your numbers will be in `models/training_metrics.json`):
-
-   - Logistic Regression — highest ROC-AUC → **selected for this prototype**
-   - XGBoost — close second on ROC-AUC / F1
-   - Random Forest — higher precision, lower recall and ROC-AUC
-
-   Logistic Regression is **not** claimed to be the best churn model in general. It won this comparison on this 20% holdout.
-9. Save **the full Pipeline** to `models/churn_pipeline.joblib`. Inference always calls this object. Encoding is **not** duplicated in the API.
-
-Metrics are written to `models/training_metrics.json`.
+The notebook `notebooks/01_model_development.ipynb` is the analysis write-up. `python -m backend.ml.train` repeats the same comparison and overwrites the saved pipeline. Read `docs/IMPLEMENTATION_REPORT.md` for the measured comparison. Do not treat one IBM dataset result as evidence about other operators.
 
 ---
 
@@ -226,7 +223,7 @@ Supported providers (OpenAI-compatible HTTP):
 - `LLM_PROVIDER=groq` (default base `https://api.groq.com/openai/v1`)
 - `LLM_PROVIDER=openai_compatible` plus `LLM_BASE_URL` (Ollama, vLLM, Azure-compatible gateways, etc.)
 
-RAG is **not** implemented. You could later add a retrieval module beside `backend/chatbot/` without changing Streamlit.
+RAG is **not** implemented. `data/mock_company_policies/README.md` describes how a later retrieval step should cite those files without changing the SQL assistant or the saved model.
 
 ---
 

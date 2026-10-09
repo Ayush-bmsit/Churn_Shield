@@ -1,5 +1,6 @@
 """Load the saved sklearn Pipeline and score customers. Do not re-implement encoding here."""
 
+import json
 from pathlib import Path
 
 import joblib
@@ -44,6 +45,14 @@ def reload_pipeline() -> None:
     load_pipeline()
 
 
+def decision_threshold() -> float:
+    path = models_dir() / "training_metrics.json"
+    if not path.exists():
+        return 0.5
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return float(payload.get("decision_threshold", 0.5))
+
+
 def predict_frame(df: pd.DataFrame) -> pd.DataFrame:
     pipe = load_pipeline()
     work = clean_features(df)
@@ -52,12 +61,14 @@ def predict_frame(df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError(f"Missing required columns: {missing}")
     X = work[FEATURE_COLUMNS]
     proba = pipe.predict_proba(X)[:, 1]
+    threshold = decision_threshold()
     out = work.copy()
     if ID_COL not in out.columns:
         out[ID_COL] = [f"row-{i}" for i in range(len(out))]
     out["churn_probability"] = proba.round(4)
-    out["predicted_churn"] = [predicted_label(p) for p in proba]
+    out["predicted_churn"] = [predicted_label(p, threshold) for p in proba]
     out["risk_level"] = [risk_level(p) for p in proba]
+    out["decision_threshold"] = threshold
     return out
 
 
@@ -69,6 +80,7 @@ def predict_one(feature_dict: dict) -> dict:
         "churn_probability": float(scored["churn_probability"]),
         "predicted_churn": str(scored["predicted_churn"]),
         "risk_level": str(scored["risk_level"]),
+        "decision_threshold": float(scored["decision_threshold"]),
     }
 
 

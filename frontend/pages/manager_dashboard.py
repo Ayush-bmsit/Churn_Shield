@@ -5,7 +5,7 @@ from frontend.api_client import ApiClient, ApiError
 
 
 def render(api: ApiClient) -> None:
-    st.title("Manager dashboard")
+    st.title("ChurnShield — Manager dashboard")
     st.write("Overview of stored customers and model scores. Open Analytics for the full breakdown.")
 
     try:
