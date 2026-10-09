@@ -1,0 +1,124 @@
+{
+  "selected_model": "logistic_regression",
+  "selection_rule": "highest roc_auc on the held-out 20% test split",
+  "metrics": {
+    "logistic_regression": {
+      "precision": 0.525089605734767,
+      "recall": 0.7834224598930482,
+      "f1": 0.628755364806867,
+      "roc_auc": 0.8510566018238652,
+      "confusion_matrix": [
+        [
+          770,
+          265
+        ],
+        [
+          81,
+          293
+        ]
+      ]
+    },
+    "random_forest": {
+      "precision": 0.5555555555555556,
+      "recall": 0.6283422459893048,
+      "f1": 0.589711417816813,
+      "roc_auc": 0.8224766850086542,
+      "confusion_matrix": [
+        [
+          847,
+          188
+        ],
+        [
+          139,
+          235
+        ]
+      ]
+    },
+    "xgboost": {
+      "precision": 0.5426944971537002,
+      "recall": 0.7647058823529411,
+      "f1": 0.634850166481687,
+      "roc_auc": 0.8430016275284817,
+      "confusion_matrix": [
+        [
+          794,
+          241
+        ],
+        [
+          88,
+          286
+        ]
+      ]
+    }
+  },
+  "feature_names": [
+    "num__tenure",
+    "num__MonthlyCharges",
+    "num__TotalCharges",
+    "num__SeniorCitizen",
+    "cat__gender_Female",
+    "cat__gender_Male",
+    "cat__Partner_No",
+    "cat__Partner_Yes",
+    "cat__Dependents_No",
+    "cat__Dependents_Yes",
+    "cat__PhoneService_No",
+    "cat__PhoneService_Yes",
+    "cat__MultipleLines_No",
+    "cat__MultipleLines_No phone service",
+    "cat__MultipleLines_Yes",
+    "cat__InternetService_DSL",
+    "cat__InternetService_Fiber optic",
+    "cat__InternetService_No",
+    "cat__OnlineSecurity_No",
+    "cat__OnlineSecurity_No internet service",
+    "cat__OnlineSecurity_Yes",
+    "cat__OnlineBackup_No",
+    "cat__OnlineBackup_No internet service",
+    "cat__OnlineBackup_Yes",
+    "cat__DeviceProtection_No",
+    "cat__DeviceProtection_No internet service",
+    "cat__DeviceProtection_Yes",
+    "cat__TechSupport_No",
+    "cat__TechSupport_No internet service",
+    "cat__TechSupport_Yes",
+    "cat__StreamingTV_No",
+    "cat__StreamingTV_No internet service",
+    "cat__StreamingTV_Yes",
+    "cat__StreamingMovies_No",
+    "cat__StreamingMovies_No internet service",
+    "cat__StreamingMovies_Yes",
+    "cat__Contract_Month-to-month",
+    "cat__Contract_One year",
+    "cat__Contract_Two year",
+    "cat__PaperlessBilling_No",
+    "cat__PaperlessBilling_Yes",
+    "cat__PaymentMethod_Bank transfer (automatic)",
+    "cat__PaymentMethod_Credit card (automatic)",
+    "cat__PaymentMethod_Electronic check",
+    "cat__PaymentMethod_Mailed check"
+  ],
+  "feature_columns": [
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges",
+    "SeniorCitizen",
+    "gender",
+    "Partner",
+    "Dependents",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaperlessBilling",
+    "PaymentMethod"
+  ],
+  "id_column": "customerID",
+  "notes": "Metrics are from one train/test split. They are for this prototype only and should not be treated as a production benchmark."
+}

@@ -1,0 +1,43 @@
+{
+  "n_clusters": 4,
+  "features": [
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges"
+  ],
+  "naming_rule": "Each cluster is named by comparing its mean tenure and mean MonthlyCharges to the overall medians (tenure median=29.0, monthly median=70.35). These labels describe usage patterns only.",
+  "clusters": {
+    "0": {
+      "count": 1703,
+      "avg_tenure": 10.21491485613623,
+      "avg_monthly_charges": 31.77566059894304,
+      "avg_total_charges": 302.15237815619497,
+      "segment_name": "Shorter tenure, lower monthly charges"
+    },
+    "1": {
+      "count": 1904,
+      "avg_tenure": 59.53098739495798,
+      "avg_monthly_charges": 93.30622373949579,
+      "avg_total_charges": 5548.653886554622,
+      "segment_name": "Longer tenure, higher monthly charges"
+    },
+    "2": {
+      "count": 2276,
+      "avg_tenure": 15.424868189806679,
+      "avg_monthly_charges": 80.77965729349737,
+      "avg_total_charges": 1251.1652240773285,
+      "segment_name": "Shorter tenure, higher monthly charges"
+    },
+    "3": {
+      "count": 1160,
+      "avg_tenure": 53.56896551724138,
+      "avg_monthly_charges": 34.90784482758621,
+      "avg_total_charges": 1835.615646551724,
+      "segment_name": "Longer tenure, lower monthly charges"
+    }
+  },
+  "medians": {
+    "tenure": 29.0,
+    "MonthlyCharges": 70.35
+  }
+}
