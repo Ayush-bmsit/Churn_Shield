@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +34,14 @@ class Settings(BaseSettings):
     llm_model: str = "gpt-4o-mini"
     llm_base_url: str = ""
     llm_timeout_seconds: int = 60
+
+    @field_validator("csv_path", "models_dir")
+    @classmethod
+    def _anchor_to_project(cls, value: str) -> str:
+        path = Path(value)
+        if not path.is_absolute():
+            path = ROOT_DIR / path
+        return str(path.resolve())
 
 
 settings = Settings()
