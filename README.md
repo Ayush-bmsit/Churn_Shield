@@ -41,6 +41,10 @@ Streamlit frontend  --HTTP/JSON-->  FastAPI backend
                                  chatbot_user)
 ```
 
+Training is offline. A customer request loads the saved pipeline. K-means only groups customers already stored for the manager view.
+
+![ChurnShield training and prediction flow](docs/churnshield-flow.jpg)
+
 **Choices made for simplicity**
 
 - Streamlit never talks to MySQL. It only calls FastAPI.
